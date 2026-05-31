@@ -28,7 +28,7 @@ import gymnasium as gym
 
 from evaluation.metrics import evaluate_policy
 from evaluation.policies import random_policy, sb3_policy
-from evaluation.reporting import plot_metrics, print_table, write_csv
+from evaluation.reporting import plot_metrics, print_table, select_best, write_csv
 
 DEFAULT_RESULTS_DIR = os.path.join("evaluation", "results")
 
@@ -79,6 +79,11 @@ def main() -> None:
     parser.add_argument("--no-random", action="store_true", help="Skip the random baseline")
     parser.add_argument("--results-dir", default=DEFAULT_RESULTS_DIR, help="Where to write outputs")
     parser.add_argument("--no-plots", action="store_true", help="Disable plot generation")
+    parser.add_argument(
+        "--select-best",
+        action="store_true",
+        help="Print the best policy/checkpoint by average return on the eval env",
+    )
     args = parser.parse_args()
 
     def env_factory() -> gym.Env:
@@ -123,6 +128,14 @@ def main() -> None:
         return
 
     print_table(evaluations)
+
+    if args.select_best:
+        best = select_best(evaluations, metric="avg_return", maximize=True)
+        if best is not None:
+            print(
+                f"Best by average return: {best.name} "
+                f"(return={best.avg_return:.2f} +/- {best.std_return:.2f})\n"
+            )
 
     csv_path = write_csv(evaluations, os.path.join(args.results_dir, "results.csv"))
     print(f"CSV written to: {csv_path}")

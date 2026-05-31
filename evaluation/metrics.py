@@ -31,6 +31,7 @@ class EpisodeResult:
     length: int
     forward_distance: float
     average_velocity: float
+    energy_cost: float
     fell: bool
 
 
@@ -91,6 +92,14 @@ class PolicyEvaluation:
         return self._std(self._values("average_velocity"))
 
     @property
+    def avg_energy_cost(self) -> float:
+        return self._mean(self._values("energy_cost"))
+
+    @property
+    def std_energy_cost(self) -> float:
+        return self._std(self._values("energy_cost"))
+
+    @property
     def fall_rate(self) -> float:
         if not self.episodes:
             return 0.0
@@ -109,6 +118,8 @@ class PolicyEvaluation:
             "std_forward_distance": round(self.std_forward_distance, 3),
             "avg_velocity": round(self.avg_velocity, 4),
             "std_velocity": round(self.std_velocity, 4),
+            "avg_energy_cost": round(self.avg_energy_cost, 4),
+            "std_energy_cost": round(self.std_energy_cost, 4),
             "fall_rate": round(self.fall_rate, 3),
         }
 
@@ -129,6 +140,7 @@ def run_episode(env: gym.Env, policy_fn: PolicyFn, seed: int | None = None) -> E
     start_x: float | None = None
     last_x: float = 0.0
     velocities: List[float] = []
+    energy_accum = 0.0
     terminated = False
     truncated = False
 
@@ -138,6 +150,10 @@ def run_episode(env: gym.Env, policy_fn: PolicyFn, seed: int | None = None) -> E
 
         total_reward += float(reward)
         steps += 1
+
+        # Torque / energy cost proxy: sum of squared control torques applied
+        # this step (control effort). Averaged over the episode below.
+        energy_accum += float(np.sum(np.square(np.asarray(action, dtype=np.float64))))
 
         # MuJoCo locomotion envs expose x position/velocity in ``info``.
         x_pos = info.get("x_position")
@@ -153,12 +169,14 @@ def run_episode(env: gym.Env, policy_fn: PolicyFn, seed: int | None = None) -> E
 
     forward_distance = (last_x - start_x) if start_x is not None else 0.0
     average_velocity = float(mean(velocities)) if velocities else 0.0
+    energy_cost = (energy_accum / steps) if steps else 0.0
 
     return EpisodeResult(
         episode_return=total_reward,
         length=steps,
         forward_distance=forward_distance,
         average_velocity=average_velocity,
+        energy_cost=energy_cost,
         # Falling = terminated early rather than hitting the time limit.
         fell=bool(terminated and not truncated),
     )

@@ -16,6 +16,7 @@ _TABLE_COLUMNS = [
     ("avg_length", "Length", "{:>8}"),
     ("avg_forward_distance", "FwdDist", "{:>9}"),
     ("avg_velocity", "Vel", "{:>8}"),
+    ("avg_energy_cost", "Energy", "{:>8}"),
     ("fall_rate", "FallRate", "{:>9}"),
 ]
 
@@ -38,6 +39,24 @@ def print_table(evaluations: Sequence[PolicyEvaluation]) -> None:
         print(line)
     print("=" * len(header))
     print("Return/Length/FwdDist/Vel are means; FallRate is fraction of episodes\n")
+
+
+def select_best(
+    evaluations: Sequence[PolicyEvaluation],
+    metric: str = "avg_return",
+    maximize: bool = True,
+) -> PolicyEvaluation | None:
+    """Return the policy with the best value of ``metric``.
+
+    Used to choose the strongest checkpoint based on *evaluation* performance
+    rather than assuming the latest checkpoint is best (RL training is noisy and
+    can degrade with more steps).
+    """
+
+    if not evaluations:
+        return None
+    key = lambda e: getattr(e, metric)  # noqa: E731
+    return max(evaluations, key=key) if maximize else min(evaluations, key=key)
 
 
 def write_csv(evaluations: Sequence[PolicyEvaluation], path: str) -> str:
@@ -85,6 +104,12 @@ def plot_metrics(evaluations: Sequence[PolicyEvaluation], out_dir: str) -> List[
             lambda e: e.std_forward_distance,
         ),
         ("velocity", "Average Velocity", lambda e: e.avg_velocity, lambda e: e.std_velocity),
+        (
+            "energy_cost",
+            "Energy / Torque Cost",
+            lambda e: e.avg_energy_cost,
+            lambda e: e.std_energy_cost,
+        ),
         ("fall_rate", "Fall Rate", lambda e: e.fall_rate, lambda _e: 0.0),
     ]
 
