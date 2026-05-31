@@ -1,1 +1,6 @@
-pip freeze > requirements.txt
+gymnasium[mujoco]>=1.2.0
+mujoco>=3.8.0
+stable-baselines3>=2.8.0
+torch>=2.7.0
+numpy
+matplotlib
