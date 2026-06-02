@@ -22,7 +22,18 @@ import gymnasium as gym
 from stable_baselines3 import PPO
 
 
-DEFAULT_MILESTONES = [10_000, 25_000, 50_000, 100_000, 150_000, 200_000]
+DEFAULT_MILESTONES = [
+    10_000,
+    25_000,
+    50_000,
+    100_000,
+    150_000,
+    200_000,
+    250_000,
+    500_000,
+    1_000_000,
+    2_000_000,
+]
 
 
 def main() -> None:
