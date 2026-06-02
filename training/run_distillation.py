@@ -1,22 +1,4 @@
 """Phase 7/8 entry point: run the policy distillation pipeline.
-
-By default this uses :class:`MockTeacher` teachers so the full pipeline
-(state collection -> action-distribution extraction -> KL loss -> student
-update -> save) can be executed and validated *before* the real teachers from
-Phase 5 exist. Swap in real teachers by passing ``--teacher`` specs.
-
-Examples
---------
-Run end-to-end right now with two mock teachers on Ant-v5::
-
-    python -m training.run_distillation --steps-per-teacher 2000 --epochs 10
-
-Distill from real Phase-5 teachers once they are available::
-
-    python -m training.run_distillation \
-        --teacher ppo:training/models/teacher_normal \
-        --teacher ppo:training/models/teacher_slippery \
-        --env Ant-v5 --env Ant-v5
 """
 
 from __future__ import annotations
@@ -26,6 +8,8 @@ import os
 from typing import Callable, List
 
 import gymnasium as gym
+
+import environments  
 
 from training.distillation.data import collect_dataset
 from training.distillation.distill import DistillConfig, DistillationTrainer
