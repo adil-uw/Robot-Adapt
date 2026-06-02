@@ -1,16 +1,17 @@
-"""Phase 2: PPO baseline training with periodic checkpoints.
+"""Phase 3: SAC baseline training with periodic checkpoints.
 
-Trains PPO on a standard environment (Ant-v5 by default) and saves a checkpoint
+Trains SAC on a standard environment (Ant-v5 by default) and saves a checkpoint
 at each requested milestone so the *best* policy can later be selected via the
-evaluation framework rather than blindly taking the final model. This addresses
-the professor's note that RL performance is highly variable.
+evaluation framework rather than blindly taking the final model.
 
 Example
 -------
-    python -m training.train_ppo_baseline \
+    python -m training.train_sac_baseline \
         --env Ant-v5 \
         --milestones 10000 25000 50000 100000 150000 200000 \
-        --out-dir training/models --seed 0
+        --out-dir training/models/phase3/sac \
+        --log-dir training/logs/phase3/sac \
+        --prefix sac_normal --seed 0
 """
 
 from __future__ import annotations
@@ -20,14 +21,14 @@ import os
 
 import environments  # noqa: F401 — register AntSlippery-v5
 import gymnasium as gym
-from stable_baselines3 import PPO
+from stable_baselines3 import SAC
 
 
 DEFAULT_MILESTONES = [10_000, 25_000, 50_000, 100_000, 150_000, 200_000]
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="PPO baseline training with checkpoints")
+    parser = argparse.ArgumentParser(description="SAC baseline training with checkpoints")
     parser.add_argument("--env", default="Ant-v5", help="Gymnasium environment id")
     parser.add_argument(
         "--milestones",
@@ -39,7 +40,7 @@ def main() -> None:
     parser.add_argument("--out-dir", default=os.path.join("training", "models"))
     parser.add_argument("--log-dir", default=os.path.join("training", "logs"))
     parser.add_argument("--seed", type=int, default=0)
-    parser.add_argument("--prefix", default="ppo_ant", help="Checkpoint filename prefix")
+    parser.add_argument("--prefix", default="sac_ant", help="Checkpoint filename prefix")
     args = parser.parse_args()
 
     os.makedirs(args.out_dir, exist_ok=True)
@@ -47,7 +48,7 @@ def main() -> None:
 
     env = gym.make(args.env)
 
-    model = PPO(
+    model = SAC(
         policy="MlpPolicy",
         env=env,
         verbose=1,
@@ -71,10 +72,11 @@ def main() -> None:
         print(f"[checkpoint] saved {checkpoint}.zip at {milestone} steps")
 
     env.close()
-    print("PPO baseline training finished.")
+    print("SAC baseline training finished.")
     print(f"Checkpoints in: {args.out_dir}")
-    print("Next: select the best checkpoint with `python -m evaluation.evaluate --auto-discover`")
+    print("Next: evaluate with `python -m evaluation.evaluate --sac ...`")
 
 
 if __name__ == "__main__":
     main()
+
