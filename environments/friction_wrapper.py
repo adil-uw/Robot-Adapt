@@ -28,6 +28,7 @@ class FrictionWrapper(gym.Wrapper):
         torsional_friction: float | None = None,
         rolling_friction: float | None = None,
         friction_scale: float | None = None,
+        priority: int | None = None,
     ):
         super().__init__(env)
         self.geom_names = tuple(geom_names)
@@ -35,6 +36,7 @@ class FrictionWrapper(gym.Wrapper):
         self.torsional_friction = torsional_friction
         self.rolling_friction = rolling_friction
         self.friction_scale = friction_scale
+        self.priority = priority
 
         if friction_scale is None and sliding_friction is None:
             raise ValueError("Set friction_scale or sliding_friction (or both).")
@@ -45,7 +47,11 @@ class FrictionWrapper(gym.Wrapper):
             geom_id: self._model.geom_friction[geom_id].copy()
             for geom_id in self._geom_ids
         }
+        self._original_priority = {
+            geom_id: int(self._model.geom_priority[geom_id]) for geom_id in self._geom_ids
+        }
         self._apply_friction()
+        self._apply_priority()
 
     def _resolve_geom_ids(self) -> list[int]:
         geom_ids: list[int] = []
@@ -82,9 +88,17 @@ class FrictionWrapper(gym.Wrapper):
                 [sliding, torsional, rolling], dtype=np.float64
             )
 
+    def _apply_priority(self) -> None:
+        """Ensure contact friction uses this geom's friction (MuJoCo uses max/priority rule)."""
+        if self.priority is None:
+            return
+        for geom_id in self._geom_ids:
+            self._model.geom_priority[geom_id] = int(self.priority)
+
     def reset(self, *, seed: int | None = None, options: dict | None = None):
         obs, info = self.env.reset(seed=seed, options=options)
         self._apply_friction()
+        self._apply_priority()
         return obs, info
 
     def get_floor_friction(self) -> dict[str, Sequence[float]]:

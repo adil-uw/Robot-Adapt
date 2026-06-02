@@ -21,6 +21,12 @@ MuJoCo geom friction is `(sliding, torsional, rolling)`.
 
 Implementation: `environments/friction_wrapper.py` wraps `Ant-v5` and modifies the `floor` geom only. Ant body geoms are unchanged.
 
+### Important MuJoCo detail (why we set floor priority)
+
+MuJoCo combines contact friction between two geoms using a **priority / maximum** rule. Since Ant's feet geoms have friction `(1.0, 0.5, 0.5)`, simply lowering the floor friction is not enough: MuJoCo would otherwise take the element-wise maximum and the contact would behave as if friction were still high.
+
+Therefore `AntSlippery-v5` sets the **floor geom priority** higher than the feet so the floor's low friction dominates the contact.
+
 ## Usage
 
 ### Python factory (recommended)
