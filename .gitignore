@@ -7,7 +7,7 @@ venv/
 models/
 logs/
 checkpoints/
-evaluation/results/
+#evaluation/results/
 
 .env
 .vscode/
