@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import time
 from typing import Callable, List
 
 import gymnasium as gym
@@ -58,6 +59,11 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--device", default="cpu")
     parser.add_argument("--out", default=os.path.join("training", "models", "distilled_student.pt"))
+    parser.add_argument(
+        "--log-dir",
+        default=os.path.join("training", "logs"),
+        help="Base TensorBoard log dir (a distill_<timestamp> run folder is created inside)",
+    )
     args = parser.parse_args()
 
     teacher_specs = args.teacher or ["mock", "mock"]
@@ -92,6 +98,8 @@ def main() -> None:
     )
     print(f"Collected {len(obs)} states.")
 
+    run_log_dir = os.path.join(args.log_dir, f"distill_{time.strftime('%Y%m%d_%H%M%S')}")
+
     student = StudentPolicy(obs_dim=obs_dim, action_dim=action_dim, hidden=args.hidden)
     config = DistillConfig(
         epochs=args.epochs,
@@ -99,6 +107,7 @@ def main() -> None:
         learning_rate=args.lr,
         kl_direction=args.kl_direction,
         device=args.device,
+        log_dir=run_log_dir,
     )
     trainer = DistillationTrainer(student, config)
 

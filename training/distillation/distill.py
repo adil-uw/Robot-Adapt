@@ -19,6 +19,7 @@ class DistillConfig:
     learning_rate: float = 3e-4
     kl_direction: str = "forward"
     device: str = "cpu"
+    log_dir: str | None = None  # TensorBoard run directory (None disables logging)
 
 
 class DistillationTrainer:
@@ -46,7 +47,15 @@ class DistillationTrainer:
         )
         loader = DataLoader(dataset, batch_size=self.config.batch_size, shuffle=True)
 
+        writer = None
+        if self.config.log_dir:
+            from torch.utils.tensorboard import SummaryWriter
+
+            writer = SummaryWriter(self.config.log_dir)
+            print(f"[distill] logging to TensorBoard: {self.config.log_dir}")
+
         history: List[float] = []
+        global_step = 0
         for epoch in range(self.config.epochs):
             epoch_loss = 0.0
             num_batches = 0
@@ -66,10 +75,18 @@ class DistillationTrainer:
 
                 epoch_loss += float(loss.item())
                 num_batches += 1
+                global_step += 1
+                if writer is not None:
+                    writer.add_scalar("distill/kl_loss_step", float(loss.item()), global_step)
 
             mean_loss = epoch_loss / max(num_batches, 1)
             history.append(mean_loss)
+            if writer is not None:
+                writer.add_scalar("distill/kl_loss_epoch", mean_loss, epoch + 1)
             print(f"[distill] epoch {epoch + 1:>3}/{self.config.epochs}  KL loss = {mean_loss:.5f}")
+
+        if writer is not None:
+            writer.close()
 
         return history
 
