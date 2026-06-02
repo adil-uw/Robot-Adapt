@@ -1,0 +1,9 @@
+policy,episodes,avg_return,std_return,avg_length,std_length,avg_forward_distance,std_forward_distance,avg_velocity,std_velocity,avg_energy_cost,std_energy_cost,fall_rate
+SAC:teacher_slippery_sac_1000000_steps,30,-319.335,358.944,704.3,419.1,4.341,2.648,0.3138,0.3549,2.5499,1.0552,0.333
+SAC:teacher_slippery_sac_100000_steps,30,919.039,48.704,1000.0,0.0,0.211,0.238,0.0042,0.0047,0.1625,0.098,0.0
+SAC:teacher_slippery_sac_10000_steps,30,86.49,113.458,416.7,434.7,0.096,2.009,-0.1141,0.3024,1.6769,0.1512,0.667
+SAC:teacher_slippery_sac_200000_steps,30,952.896,27.925,1000.0,0.0,0.388,0.241,0.0077,0.0048,0.1013,0.0514,0.0
+SAC:teacher_slippery_sac_25000_steps,30,895.919,37.392,1000.0,0.0,0.308,0.219,0.0061,0.0044,0.2124,0.0777,0.0
+SAC:teacher_slippery_sac_400000_steps,30,927.165,106.295,980.2,67.5,3.284,0.775,0.0664,0.014,0.2389,0.1138,0.1
+SAC:teacher_slippery_sac_50000_steps,30,829.406,202.359,969.2,148.1,0.77,1.053,0.02,0.0341,0.3516,0.3877,0.067
+SAC:teacher_slippery_sac_800000_steps,30,215.145,496.113,812.3,317.1,12.485,10.608,0.4182,0.3639,1.8432,0.8564,0.3

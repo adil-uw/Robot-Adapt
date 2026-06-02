@@ -1,0 +1,4 @@
+policy,episodes,avg_return,std_return,avg_length,std_length,avg_forward_distance,std_forward_distance,avg_velocity,std_velocity,avg_energy_cost,std_energy_cost,fall_rate
+Random,30,-51.284,102.158,162.4,282.6,0.257,0.945,0.0461,0.2865,2.6786,0.1416,0.9
+PPO:ppo_normal_1000000_steps,30,1754.056,687.05,880.6,254.6,68.222,32.205,1.5441,0.6115,1.118,0.0893,0.2
+SAC:sac_normal_1000000_steps,30,4379.065,553.894,968.4,121.3,225.866,28.543,4.6667,0.1375,2.2841,0.033,0.067
