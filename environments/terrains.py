@@ -42,6 +42,9 @@ def _make_slippery_ant(**kwargs) -> gym.Env:
         sliding_friction=sliding,
         torsional_friction=torsional,
         rolling_friction=rolling,
+        # MuJoCo combines contact friction using geom priority / max rule.
+        # Set floor priority higher than the feet so floor friction dominates.
+        priority=1,
     )
 
 
