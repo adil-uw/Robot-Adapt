@@ -5,9 +5,8 @@ Measures how much a single policy degrades when moved from a *source* terrain
 "transfer drop" metric the professor asked for.
 
 The module is terrain-agnostic: it works today with any two Gymnasium env ids
-and will measure real normal->slippery transfer once Person 2's slippery env
-(Phase 4) is registered -- no code changes required, just pass its id as
-``--target-env``.
+and will measure real normal->slippery transfer using ``AntSlippery-v5`` as
+``--target-env`` (Phase 4).
 
 For the teacher-student comparison ("student on terrain B after distillation
 from teacher A vs. a student trained from scratch"), evaluate each policy here
@@ -19,6 +18,7 @@ from __future__ import annotations
 import argparse
 from typing import Dict
 
+import environments  # noqa: F401 — register AntSlippery-v5
 import gymnasium as gym
 
 from evaluation.metrics import PolicyEvaluation, evaluate_policy

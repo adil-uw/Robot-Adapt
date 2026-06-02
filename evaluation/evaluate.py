@@ -12,9 +12,10 @@ Evaluate the random baseline plus a trained PPO checkpoint::
         --episodes 10 --seeds 0 1 2 \
         --ppo training/models/ppo_ant_100k_steps
 
-Auto-discover every ``*.zip`` in ``training/models`` and evaluate them as PPO::
+Auto-discover every ``*.zip`` in a folder as PPO or SAC::
 
-    python -m evaluation.evaluate --auto-discover
+    python -m evaluation.evaluate --auto-discover --models-dir training/models/phase3/ppo
+    python -m evaluation.evaluate --auto-discover --discover-algo SAC --models-dir training/models/phase3/sac
 """
 
 from __future__ import annotations
@@ -24,6 +25,7 @@ import glob
 import os
 from typing import List, Tuple
 
+import environments  # noqa: F401 — register AntSlippery-v5
 import gymnasium as gym
 
 from evaluation.metrics import evaluate_policy
@@ -44,11 +46,12 @@ def _build_policy_specs(args: argparse.Namespace) -> List[Tuple[str, str, str]]:
         specs.append((f"SAC:{os.path.basename(path)}", path, "SAC"))
 
     if args.auto_discover:
+        algo = args.discover_algo.upper()
         for zip_path in sorted(glob.glob(os.path.join(args.models_dir, "*.zip"))):
             path = zip_path[: -len(".zip")]
-            name = f"PPO:{os.path.basename(path)}"
+            name = f"{algo}:{os.path.basename(path)}"
             if all(name != existing[0] for existing in specs):
-                specs.append((name, path, "PPO"))
+                specs.append((name, path, algo))
 
     return specs
 
@@ -74,7 +77,13 @@ def main() -> None:
     parser.add_argument(
         "--auto-discover",
         action="store_true",
-        help="Evaluate every *.zip checkpoint found in --models-dir as PPO",
+        help="Evaluate every *.zip checkpoint found in --models-dir",
+    )
+    parser.add_argument(
+        "--discover-algo",
+        choices=["PPO", "SAC"],
+        default="PPO",
+        help="Algorithm used when loading checkpoints from --auto-discover (default: PPO)",
     )
     parser.add_argument("--no-random", action="store_true", help="Skip the random baseline")
     parser.add_argument("--results-dir", default=DEFAULT_RESULTS_DIR, help="Where to write outputs")
