@@ -46,9 +46,19 @@ def _build_policy_specs(args: argparse.Namespace) -> List[Tuple[str, str, str]]:
         specs.append((f"SAC:{os.path.basename(path)}", path, "SAC"))
 
     if args.auto_discover:
-        algo = args.discover_algo.upper()
+        default_algo = args.discover_algo.upper()
         for zip_path in sorted(glob.glob(os.path.join(args.models_dir, "*.zip"))):
             path = zip_path[: -len(".zip")]
+            # Infer the algorithm from the filename so a folder containing both
+            # PPO and SAC checkpoints loads each one correctly. Fall back to
+            # --discover-algo when the name gives no hint.
+            base = os.path.basename(path).lower()
+            if "sac" in base:
+                algo = "SAC"
+            elif "ppo" in base:
+                algo = "PPO"
+            else:
+                algo = default_algo
             name = f"{algo}:{os.path.basename(path)}"
             if all(name != existing[0] for existing in specs):
                 specs.append((name, path, algo))
@@ -114,7 +124,12 @@ def main() -> None:
             print(f"  [skip] {name}: checkpoint not found at {path}.zip")
             continue
         print(f"Evaluating: {name} ...")
-        policy = sb3_policy(path, algo)
+        try:
+            policy = sb3_policy(path, algo)
+        except Exception as exc:
+            # e.g. loading a PPO checkpoint as SAC. Skip rather than abort the run.
+            print(f"  [skip] {name}: failed to load as {algo} ({type(exc).__name__}: {exc})")
+            continue
         evaluations.append(
             evaluate_policy(env_factory, policy, name, args.episodes, tuple(args.seeds))
         )
