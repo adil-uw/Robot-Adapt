@@ -1,9 +1,13 @@
 __pycache__/
 *.pyc
 
+.venv/
+venv/
+
 models/
 logs/
 checkpoints/
+evaluation/results/
 
 .env
 .vscode/
